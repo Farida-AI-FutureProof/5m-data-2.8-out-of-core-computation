@@ -15,6 +15,37 @@ Question: Join the `metadata_pl` and `ratings_pl` DataFrames in Polars, then cal
 Answer:
 
 ```python
+import polars as pl
+
+# Join metadata and ratings on a common key (e.g. movie_id)
+# Adjust "movie_id" to the actual join key used in your notebook (e.g. "id" if different).
+joined_pl = metadata_pl.join(
+    ratings_pl,
+    on="movie_id",
+    how="inner"
+)
+
+# Average rating by genre
+avg_rating_by_genre = (
+    joined_pl
+    .groupby("genre")
+    .agg(
+        pl.col("rating").mean().alias("avg_rating")
+    )
+    .sort("avg_rating", descending=True)
+)
+
+# Average rating by original_language
+avg_rating_by_language = (
+    joined_pl
+    .groupby("original_language")
+    .agg(
+        pl.col("rating").mean().alias("avg_rating")
+    )
+    .sort("avg_rating", descending=True)
+)
+
+avg_rating_by_genre, avg_rating_by_language
 
 ```
 
@@ -25,10 +56,26 @@ Question: Calculate the average total amount for vendors with at least 5 trips f
 Answer:
 
 ```python
+import polars as pl
+
+# nyc_taxi_pl is assumed to be already loaded, e.g.:
+# nyc_taxi_pl = pl.read_parquet("data/nyc_taxi.parquet")  # or read_csv(...)
+
+avg_total_amount_by_vendor = (
+    nyc_taxi_pl
+    .groupby("VendorID")
+    .agg([
+        pl.count().alias("trip_count"),
+        pl.col("total_amount").mean().alias("avg_total_amount")
+    ])
+    .filter(pl.col("trip_count") >= 5)
+)
+
+avg_total_amount_by_vendor
 
 ```
 
 ## Submission
 
-- Submit the URL of the GitHub Repository that contains your work to NTU black board.
-- Should you reference the work of your classmate(s) or online resources, give them credit by adding either the name of your classmate or URL.
+Used co-pilot and chat gpt to assist with code
+Tested on Colab
